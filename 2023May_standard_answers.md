@@ -4,6 +4,17 @@ Source exam: `2023May.pdf`
 
 These solutions show the main working steps. For eigenvectors and principal components, the sign is arbitrary: if $v$ is correct, then $-v$ is also correct.
 
+Notation is aligned with the lecture slides:
+
+- For ordinary PCA, the principal component/loading vector is the unit eigenvector of the covariance matrix. If the loading is $h_j$, the PC score is $y_j=Xh_j$.
+- For kernel PCA, the Gram matrix is $K_{ij}=k(x_i,x_j)=\langle \Psi(x_i),\Psi(x_j)\rangle_{\mathcal H}$. If $Kq_j=\rho_j q_j$ with $\|q_j\|_2=1$, then the normalized RKHS principal component is
+
+$$
+v_j=\sum_i a_{ji}\Psi(x_i),\qquad a_j=\frac{q_j}{\sqrt{\rho_j}},
+$$
+
+which is the same as the slide condition $Ka_j=n\omega_j a_j$ and $a_j^TKa_j=1$, with $\rho_j=n\omega_j$.
+
 ## Question 1
 
 ### 1(a) Kernel expression for average distance to the center of mass
@@ -576,17 +587,23 @@ u_3\propto
 \end{pmatrix}.
 $$
 
-### 3(a)(iv) First principal component and information percentage
+### 3(a)(iv) First principal component/loading and information percentage
 
-The first principal component is the unit eigenvector corresponding to the largest eigenvalue:
+Following the slides, the principal component asked for here is the loading vector. It is the unit eigenvector of the covariance matrix corresponding to the largest eigenvalue. Denote it by $h_1$:
 
 $$
 \boxed{
-w_1\approx
+h_1\approx
 \begin{pmatrix}
 0.3251\\0.3251\\0.8881
 \end{pmatrix}.
 }
+$$
+
+The corresponding first PC score for a centered datum $\tilde x$ is
+
+$$
+y_1=\langle \tilde x,h_1\rangle.
 $$
 
 The total variance is
@@ -609,17 +626,23 @@ $$
 \boxed{78.9\%.}
 $$
 
-### 3(a)(v) Second principal component and first-two-PC information
+### 3(a)(v) Second principal component/loading and first-two-PC information
 
-The second principal component is
+The second principal component/loading vector is the unit eigenvector corresponding to the second largest eigenvalue. Denote it by $h_2$:
 
 $$
 \boxed{
-w_2\approx
+h_2\approx
 \begin{pmatrix}
 0.6280\\0.6280\\-0.4597
 \end{pmatrix}.
 }
+$$
+
+The corresponding second PC score is
+
+$$
+y_2=\langle \tilde x,h_2\rangle.
 $$
 
 The first two principal components contain
@@ -671,16 +694,16 @@ $$
 Solve
 
 $$
-Kq=\lambda q.
+Kq=\rho q.
 $$
 
 Numerically, the eigenvalues are
 
 $$
 \boxed{
-\lambda_1=2796.7466,\qquad
-\lambda_2=88.9784,\qquad
-\lambda_3=6.2750.
+\rho_1=2796.7466,\qquad
+\rho_2=88.9784,\qquad
+\rho_3=6.2750.
 }
 $$
 
@@ -695,15 +718,27 @@ q_1\approx
 \end{pmatrix}.
 $$
 
-The corresponding normalized feature-space principal component is
+This $q_1$ is the Euclidean-normalized Gram eigenvector. The slide notation for the actual RKHS principal component is
 
 $$
 v_1=\sum_{i=1}^{3}a_i\Psi(x_i),
-\qquad
-a=\frac{q_1}{\sqrt{\lambda_1}}.
 $$
 
-Since $\sqrt{\lambda_1}\approx52.8843$,
+with the normalization condition
+
+$$
+\langle v_1,v_1\rangle_{\mathcal H}=a^TKa=1.
+$$
+
+Because $Kq_1=\rho_1q_1$ and $\|q_1\|_2=1$, choose
+
+$$
+a=\frac{q_1}{\sqrt{\rho_1}}.
+$$
+
+This also matches the lecture formula $Ka_1=n\omega_1a_1$ with $\rho_1=n\omega_1$.
+
+Since $\sqrt{\rho_1}\approx52.8843$,
 
 $$
 a\approx
@@ -716,10 +751,10 @@ $$
 
 ### 3(b)(iii) Projection of $x=(1,1,1)^T$ onto the first kernel PC
 
-The projection coordinate is
+Strictly, the object being projected is $\Psi(x)$, and the first kernel PC is the normalized RKHS vector $v_1$. The PC score/projection coordinate is
 
 $$
-\langle \Psi(x),v_1\rangle_{\mathcal H}
+y_1(x)=\langle \Psi(x),v_1\rangle_{\mathcal H}
 =\sum_{i=1}^{3}a_i k(x_i,x).
 $$
 
@@ -942,4 +977,3 @@ Equivalent backward-time formulas may have the opposite sign depending on the in
 2. initialize $a(t_1)=\partial L/\partial x(t_1)$;
 3. solve the augmented adjoint system backward;
 4. accumulate $\partial L/\partial\theta$ from $a(t)^T\partial f/\partial\theta$.
-

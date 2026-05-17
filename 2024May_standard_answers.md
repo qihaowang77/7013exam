@@ -4,6 +4,12 @@ Source exam: `2024May.pdf`
 
 These solutions show the calculation route and the final answers. Numerical eigenvectors may differ by sign.
 
+Notation is aligned with the lecture slides:
+
+- KRR uses the representer theorem: $\hat f(x)=\sum_i\varsigma_iK(x_i,x)$, with coefficient vector satisfying $\varsigma=(K+\beta nI)^{-1}y$ when the objective is $\frac1n\sum_i|f(x_i)-y_i|^2+\beta\|f\|_{\mathcal H}^2$.
+- For ordinary PCA, the principal components $v_1,v_2$ in the exam are loading vectors. The PC scores would be $y_j=\langle x,v_j\rangle$.
+- For kernel PCA, if $Kq_j=\rho_jq_j$ and $\|q_j\|_2=1$, then the normalized RKHS principal component is $v_j=\sum_i a_{ji}\Psi(x_i)$ with $a_j=q_j/\sqrt{\rho_j}$. This is the slide formula $Ka_j=n\omega_ja_j$, $a_j^TKa_j=1$, where $\rho_j=n\omega_j$.
+
 ## Question 1
 
 The kernel is
@@ -68,22 +74,22 @@ $$
 Use
 
 $$
-w^{(k)}=Kv^{(k-1)},\qquad
-v^{(k)}=\frac{w^{(k)}}{\|w^{(k)}\|_2},\qquad
-\lambda^{(k)}=(v^{(k)})^TKv^{(k)}.
+z^{(k)}=Kv^{(k-1)},\qquad
+v^{(k)}=\frac{z^{(k)}}{\|z^{(k)}\|_2},\qquad
+\omega^{(k)}=(v^{(k)})^TKv^{(k)}.
 $$
 
 #### Iteration 1
 
 $$
-w^{(1)}=
+z^{(1)}=
 \begin{pmatrix}
 27\\0\\1\\8
 \end{pmatrix}.
 $$
 
 $$
-\|w^{(1)}\|_2=\sqrt{27^2+1^2+8^2}=\sqrt{794}.
+\|z^{(1)}\|_2=\sqrt{27^2+1^2+8^2}=\sqrt{794}.
 $$
 
 Thus
@@ -98,13 +104,13 @@ $$
 The Rayleigh quotient is
 
 $$
-\lambda^{(1)}\approx31.4081.
+\omega^{(1)}\approx31.4081.
 $$
 
 #### Iteration 2
 
 $$
-w^{(2)}=Kv^{(1)}
+z^{(2)}=Kv^{(1)}
 \approx
 \begin{pmatrix}
 28.1780\\0.3194\\1.2776\\15.3666
@@ -123,13 +129,13 @@ $$
 The Rayleigh quotient is
 
 $$
-\lambda^{(2)}\approx33.7911.
+\omega^{(2)}\approx33.7911.
 $$
 
 #### Iteration 3
 
 $$
-w^{(3)}=Kv^{(2)}
+z^{(3)}=Kv^{(2)}
 \approx
 \begin{pmatrix}
 27.5511\\0.7866\\1.4053\\19.9834
@@ -148,7 +154,7 @@ $$
 The Rayleigh quotient is
 
 $$
-\boxed{\lambda^{(3)}\approx34.6873.}
+\boxed{\omega^{(3)}\approx34.6873.}
 $$
 
 ### 1(c) Doolittle LU and solving $(K+\alpha I)^{-1}y$
@@ -192,7 +198,12 @@ U=
 \end{pmatrix}.
 $$
 
-To solve $A\beta=y$, first solve $Lz=y$:
+To solve $Ar=y$ without inverting $A$, follow the slide workflow for LU solution:
+
+1. solve $Lz=y$ by forward substitution;
+2. solve $Ur=z$ by backward substitution.
+
+First solve $Lz=y$:
 
 $$
 Lz=
@@ -201,11 +212,75 @@ Lz=
 \end{pmatrix}.
 $$
 
-Then solve $U\beta=z$ by back substitution. The result is
+Forward substitution gives
+
+$$
+z_1=2,\qquad z_2=2,
+$$
+
+$$
+\frac{2}{55}z_1+\frac{2}{55}z_2+z_3=0
+\quad\Rightarrow\quad
+z_3=-\frac{8}{55},
+$$
+
+and
+
+$$
+\frac{16}{55}z_1+\frac{2}{55}z_2+\frac{74}{157}z_3+z_4=2
+\quad\Rightarrow\quad
+z_4=\frac{2442}{1727}.
+$$
+
+Hence
+
+$$
+z=
+\begin{pmatrix}
+2\\
+2\\
+-8/55\\
+2442/1727
+\end{pmatrix}.
+$$
+
+Then solve $Ur=z$ by back substitution:
+
+$$
+\frac{428629}{17270}r_4=\frac{2442}{1727}
+\quad\Rightarrow\quad
+r_4=\frac{24420}{428629}.
+$$
+
+Next,
+
+$$
+\frac{157}{110}r_3+\frac{37}{55}r_4=-\frac{8}{55}
+\quad\Rightarrow\quad
+r_3=-\frac{55192}{428629}.
+$$
+
+Then
+
+$$
+\frac{55}{2}r_2+r_3+r_4=2
+\quad\Rightarrow\quad
+r_2=\frac{32292}{428629}.
+$$
+
+Finally,
+
+$$
+\frac{55}{2}r_1+r_3+8r_4=2
+\quad\Rightarrow\quad
+r_1=\frac{26076}{428629}.
+$$
+
+Therefore
 
 $$
 \boxed{
-\beta=A^{-1}y=
+r=A^{-1}y=
 \begin{pmatrix}
 \frac{26076}{428629}\\
 \frac{32292}{428629}\\
@@ -235,19 +310,25 @@ $$
 By the representer theorem,
 
 $$
-f(x)=\sum_{i=1}^{4}c_iK(x_i,x).
+\hat f(x)=\sum_{i=1}^{4}\varsigma_iK(x_i,x).
 $$
 
-The matrix form gives
+Following the lecture-slide matrix form, let
 
 $$
-c=(K+4\beta I)^{-1}y.
+\varsigma=(\varsigma_1,\varsigma_2,\varsigma_3,\varsigma_4)^T.
+$$
+
+Then
+
+$$
+\varsigma=(K+4\beta I)^{-1}y.
 $$
 
 Since $4\beta=4(0.125)=0.5$, this is exactly the vector computed in 1(c):
 
 $$
-c=
+\varsigma=
 \begin{pmatrix}
 \frac{26076}{428629}\\
 \frac{32292}{428629}\\
@@ -260,7 +341,7 @@ Therefore
 
 $$
 \boxed{
-f(x)
+\hat f(x)
 =\frac{26076}{428629}K(x_1,x)
 +\frac{32292}{428629}K(x_2,x)
 -\frac{55192}{428629}K(x_3,x)
@@ -268,7 +349,7 @@ f(x)
 }
 $$
 
-Since $K(x_i,x)=(1+\langle x_i,x\rangle)^3$, this is the required objective/predictor function.
+Since $K(x_i,x)=(1+\langle x_i,x\rangle_{\ell^2(\mathbb R^4)})^3$, this is the required KRR predictor function.
 
 ## Question 2
 
@@ -281,7 +362,7 @@ x_3=(1,1,0,0)^T,\quad
 x_4=(0,1,-1,0)^T.
 $$
 
-The uncentered covariance matrix used for PCA is
+The exam's MSE formula projects the raw vectors onto a subspace through the origin, so we follow that notation and use the uncentered covariance matrix
 
 $$
 V=\frac{1}{4}\sum_{i=1}^{4}x_ix_i^T
@@ -297,10 +378,10 @@ $$
 Its eigenvalues are
 
 $$
-\frac{5+\sqrt{17}}{8},\quad
-\frac{1}{2},\quad
-\frac{1}{4},\quad
-\frac{5-\sqrt{17}}{8}.
+\omega_1=\frac{5+\sqrt{17}}{8},\quad
+\omega_2=\frac{1}{2},\quad
+\omega_3=\frac{1}{4},\quad
+\omega_4=\frac{5-\sqrt{17}}{8}.
 $$
 
 Numerically:
@@ -309,7 +390,9 @@ $$
 1.1404,\quad 0.5,\quad 0.25,\quad 0.1096.
 $$
 
-### 2(a)(i) First principal component by inverse iteration
+The PCA loading vectors are the unit eigenvectors of $V$. The PC score for a datum $x$ would be $\langle x,v_j\rangle$.
+
+### 2(a)(i) First principal component/loading by inverse iteration
 
 Use shift $\nu=1$ and initial vector
 
@@ -317,22 +400,23 @@ $$
 v^{(0)}=(1,0,0,0)^T.
 $$
 
-At each step:
+At each step, use the inverse-iteration update from the slides:
 
 $$
 (V-\nu I)w^{(k)}=v^{(k-1)},\qquad
-v^{(k)}=\frac{w^{(k)}}{\|w^{(k)}\|_2}.
+v^{(k)}=\frac{w^{(k)}}{\|w^{(k)}\|_2},\qquad
+\omega^{(k)}=(v^{(k)})^TVv^{(k)}.
 $$
 
 The first three iterations are:
 
-| Iteration | $v^{(k)}$ | Rayleigh quotient |
+| Iteration | loading estimate $v^{(k)}$ | Rayleigh quotient $\omega^{(k)}$ |
 |---|---|---|
 | 1 | $(0.5669,\ 0.5669,\ -0.5669,\ -0.1890)^T$ | $1.1071$ |
 | 2 | $(0.7593,\ 0.4339,\ -0.4339,\ -0.2169)^T$ | $1.1382$ |
 | 3 | $(0.7167,\ 0.4727,\ -0.4727,\ -0.1982)^T$ | $1.1402$ |
 
-The exact first PC is the eigenvector for $\lambda_1=(5+\sqrt{17})/8$. One normalized version is approximately
+The exact first principal component/loading vector is the eigenvector for $\omega_1=(5+\sqrt{17})/8$. One normalized version is approximately
 
 $$
 \boxed{
@@ -341,21 +425,21 @@ v_1\approx
 }
 $$
 
-The negative of this vector is also correct.
+The corresponding first PC score would be $y_1=\langle x,v_1\rangle$. The negative loading $-v_1$ is also correct.
 
-### 2(a)(ii) Second principal component by inverse iteration
+### 2(a)(ii) Second principal component/loading by inverse iteration
 
 Use shift $\nu=0.4$ and the same initial vector.
 
 The first three iterations are:
 
-| Iteration | $v^{(k)}$ | Rayleigh quotient |
+| Iteration | loading estimate $v^{(k)}$ | Rayleigh quotient $\omega^{(k)}$ |
 |---|---|---|
 | 1 | $(0.4565,\ -0.3261,\ 0.3261,\ -0.7609)^T$ | $0.4853$ |
 | 2 | $(0.5684,\ -0.5050,\ 0.5050,\ -0.4083)^T$ | $0.4956$ |
 | 3 | $(0.4840,\ -0.4908,\ 0.4908,\ -0.5328)^T$ | $0.4994$ |
 
-The exact second PC corresponds to eigenvalue $1/2$. One normalized version is
+The exact second principal component/loading vector corresponds to eigenvalue $\omega_2=1/2$. One normalized version is
 
 $$
 \boxed{
@@ -363,23 +447,23 @@ v_2=\frac{1}{2}(-1,1,-1,1)^T.
 }
 $$
 
-Again, the sign may be reversed.
+Again, the sign may be reversed. The corresponding second PC score would be $y_2=\langle x,v_2\rangle$.
 
 ### 2(a)(iii) MSE using the first two PCs
 
-The MSE is
+The exam asks for
 
 $$
 \frac{1}{4}\sum_{i=1}^{4}
 \left\|
-x_i-\sum_{j=1}^{2}\langle x_i,v_j\rangle v_j
+x_i-\sum_{j=1}^{2}\langle x_i,v_j\rangle_{\ell^2(\mathbb R^4)}v_j
 \right\|_2^2.
 $$
 
-For PCA, this equals the sum of omitted covariance eigenvalues:
+Because $v_1,v_2,v_3,v_4$ form an orthonormal eigenbasis of $V$, the average reconstruction error after keeping the first two loading vectors equals the sum of the omitted covariance eigenvalues:
 
 $$
-\lambda_3+\lambda_4
+\omega_3+\omega_4
 =\frac{1}{4}+\frac{5-\sqrt{17}}{8}
 =\frac{7-\sqrt{17}}{8}.
 $$
@@ -437,25 +521,26 @@ $$
 Start with
 
 $$
-v^{(0)}=(0.5,0.5,0.5,0.5)^T.
+q^{(0)}=(0.5,0.5,0.5,0.5)^T.
 $$
 
 This vector is already normalized. The initial Rayleigh quotient is
 
 $$
-\lambda^{(0)}=(v^{(0)})^TKv^{(0)}=6.5.
+\rho^{(0)}=(q^{(0)})^TKq^{(0)}=6.5.
 $$
 
 Rayleigh quotient iteration uses
 
 $$
-(K-\lambda^{(k-1)}I)w^{(k)}=v^{(k-1)},\qquad
-v^{(k)}=\frac{w^{(k)}}{\|w^{(k)}\|_2}.
+(K-\rho^{(k-1)}I)w^{(k)}=q^{(k-1)},\qquad
+q^{(k)}=\frac{w^{(k)}}{\|w^{(k)}\|_2},\qquad
+\rho^{(k)}=(q^{(k)})^TKq^{(k)}.
 $$
 
 The first three iterations are:
 
-| Iteration | $v^{(k)}$ | $\lambda^{(k)}$ |
+| Iteration | Gram eigenvector estimate $q^{(k)}$ | Gram eigenvalue estimate $\rho^{(k)}$ |
 |---|---|---|
 | 1 | $(0.5582,\ 0.4341,\ 0.5582,\ 0.4341)^T$ | $6.561538$ |
 | 2 | $(0.5573,\ 0.4352,\ 0.5573,\ 0.4352)^T$ | $6.561553$ |
@@ -465,9 +550,11 @@ The exact largest eigenvalue is
 
 $$
 \boxed{
-\lambda_{\max}=\frac{9+\sqrt{17}}{2}\approx6.5616.
+\rho_1=\frac{9+\sqrt{17}}{2}\approx6.5616.
 }
 $$
+
+The corresponding RKHS covariance eigenvalue in the slide equation $Ka_1=4\omega_1a_1$ is $\omega_1=\rho_1/4$.
 
 ### 2(b)(iv) RKHS MSE using the first kernel PC
 
@@ -478,25 +565,33 @@ q_1\approx
 (0.5573,\ 0.4352,\ 0.5573,\ 0.4352)^T.
 $$
 
-For the normalized RKHS principal component,
+For the normalized RKHS principal component, use the slide form
 
 $$
 v=\sum_{i=1}^{4}a_i\Psi(x_i),
-\qquad
-a=\frac{q_1}{\sqrt{\lambda_{\max}}}.
 $$
 
-The MSE after projecting onto one normalized feature-space component is
+with
+
+$$
+a=\frac{q_1}{\sqrt{\rho_1}},
+\qquad
+a^TKa=1.
+$$
+
+This step is important: $q_1$ is only the Gram eigenvector; the actual first principal component $v\in\mathcal H$ uses the normalized coefficients $a$.
+
+The MSE after projecting onto this one normalized feature-space component is
 
 $$
 \frac{1}{4}\sum_{i=1}^{4}
 \|\Psi(x_i)-\langle \Psi(x_i),v\rangle_{\mathcal H}v\|_{\mathcal H}^2.
 $$
 
-Since one component captures the largest Gram eigenvalue, this equals
+Following the PCA error identity from the slides, the total average squared norm is $\frac14\operatorname{tr}(K)$, and the first kernel PC captures $\frac14\rho_1=\omega_1$. Hence
 
 $$
-\frac{1}{4}\left(\operatorname{tr}(K)-\lambda_{\max}\right).
+\frac{1}{4}\left(\operatorname{tr}(K)-\rho_1\right).
 $$
 
 Here $\operatorname{tr}(K)=4+4+4+4=16$. Therefore
@@ -939,4 +1034,3 @@ Final:
 $$
 \boxed{x_1=0.03125,\qquad x_2=0.1237850,\qquad x_3=0.2706193.}
 $$
-

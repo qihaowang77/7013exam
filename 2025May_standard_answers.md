@@ -4,6 +4,12 @@ Source exam: `2025May.pdf`
 
 These solutions show detailed working steps. Eigenvectors and principal components may differ by a sign.
 
+Notation is aligned with the lecture slides:
+
+- Jacobi uses the splitting $A=D+R$ and $x^{(k+1)}=D^{-1}(b-Rx^{(k)})$.
+- For ordinary PCA, the requested principal component $w$ is the loading vector. The PC score for a datum $x_i$ is $\langle x_i,w\rangle$.
+- For kernel PCA, the Gram matrix is $K_{ij}=K(x_i,x_j)=\langle K(x_i,\cdot),K(x_j,\cdot)\rangle_{\mathcal H}$. If $Kq_j=\rho_jq_j$ and $\|q_j\|_2=1$, then the normalized RKHS principal component is $v_j=\sum_i a_{ji}K(x_i,\cdot)$ with $a_j=q_j/\sqrt{\rho_j}$, matching the slide condition $Ka_j=n\omega_ja_j$ and $a_j^TKa_j=1$.
+
 ## Question 1
 
 The matrix is
@@ -19,7 +25,7 @@ A_n=
 \end{pmatrix}.
 $$
 
-### 1(a) General LU factorization
+### 1(a) LU factorization: show $n=3,4,5$, then any $n$
 
 Use Doolittle LU:
 
@@ -29,48 +35,321 @@ $$
 
 where $L$ has diagonal entries equal to 1.
 
-Let the diagonal entries of $U$ be $d_i$. Since the matrix is tridiagonal, $U$ has diagonal $d_i$ and superdiagonal $-1$, while $L$ has diagonal $1$ and subdiagonal entries $\ell_i$.
+The useful exam strategy is:
 
-For the first step:
+1. Work out a few small cases.
+2. Observe the diagonal pattern in $U$.
+3. Write the general formula.
+4. Justify the formula by the elimination recurrence.
+
+#### Case 1: $n=3$
+
+For
+
+$$
+A_3=
+\begin{pmatrix}
+2&-1&0\\
+-1&2&-1\\
+0&-1&2
+\end{pmatrix},
+$$
+
+the first pivot is
 
 $$
 d_1=2.
 $$
 
-The first subdiagonal multiplier is
+The multiplier used to eliminate the entry $-1$ below the first pivot is
 
 $$
-\ell_1=\frac{-1}{d_1}=-\frac{1}{2}.
+\ell_{21}=\frac{-1}{2}=-\frac12.
 $$
 
-The next diagonal entry is
+The second pivot is therefore
 
 $$
-d_2=2-\ell_1(-1)=2-\frac{1}{2}=\frac{3}{2}.
+d_2=2-\ell_{21}(-1)
+=2-\left(-\frac12\right)(-1)
+=2-\frac12
+=\frac32.
 $$
 
-In general,
+The next multiplier is
 
 $$
-\ell_i=-\frac{1}{d_i},\qquad
-d_{i+1}=2-\frac{1}{d_i}.
+\ell_{32}=\frac{-1}{d_2}
+=\frac{-1}{3/2}
+=-\frac23.
 $$
 
-This recurrence gives
+The third pivot is
+
+$$
+d_3=2-\ell_{32}(-1)
+=2-\left(-\frac23\right)(-1)
+=2-\frac23
+=\frac43.
+$$
+
+So
+
+$$
+L_3=
+\begin{pmatrix}
+1&0&0\\
+-1/2&1&0\\
+0&-2/3&1
+\end{pmatrix},
+\qquad
+U_3=
+\begin{pmatrix}
+2&-1&0\\
+0&3/2&-1\\
+0&0&4/3
+\end{pmatrix}.
+$$
+
+Notice the diagonal of $U_3$:
+
+$$
+2,\frac32,\frac43.
+$$
+
+#### Case 2: $n=4$
+
+For
+
+$$
+A_4=
+\begin{pmatrix}
+2&-1&0&0\\
+-1&2&-1&0\\
+0&-1&2&-1\\
+0&0&-1&2
+\end{pmatrix},
+$$
+
+the first three pivots and multipliers are the same as in the $n=3$ case:
+
+$$
+d_1=2,\qquad
+\ell_{21}=-\frac12,
+$$
+
+$$
+d_2=\frac32,\qquad
+\ell_{32}=-\frac23,
+$$
+
+$$
+d_3=\frac43.
+$$
+
+Now eliminate the entry below the third pivot:
+
+$$
+\ell_{43}=\frac{-1}{d_3}
+=\frac{-1}{4/3}
+=-\frac34.
+$$
+
+The fourth pivot is
+
+$$
+d_4=2-\ell_{43}(-1)
+=2-\left(-\frac34\right)(-1)
+=2-\frac34
+=\frac54.
+$$
+
+Thus
+
+$$
+L_4=
+\begin{pmatrix}
+1&0&0&0\\
+-1/2&1&0&0\\
+0&-2/3&1&0\\
+0&0&-3/4&1
+\end{pmatrix},
+\qquad
+U_4=
+\begin{pmatrix}
+2&-1&0&0\\
+0&3/2&-1&0\\
+0&0&4/3&-1\\
+0&0&0&5/4
+\end{pmatrix}.
+$$
+
+Now the diagonal of $U_4$ is
+
+$$
+2,\frac32,\frac43,\frac54.
+$$
+
+#### Case 3: $n=5$
+
+For $A_5$, continue the same elimination one more step. From the $n=4$ case,
+
+$$
+d_4=\frac54.
+$$
+
+The next multiplier is
+
+$$
+\ell_{54}=\frac{-1}{d_4}
+=\frac{-1}{5/4}
+=-\frac45.
+$$
+
+The fifth pivot is
+
+$$
+d_5=2-\ell_{54}(-1)
+=2-\left(-\frac45\right)(-1)
+=2-\frac45
+=\frac65.
+$$
+
+Therefore
+
+$$
+L_5=
+\begin{pmatrix}
+1&0&0&0&0\\
+-1/2&1&0&0&0\\
+0&-2/3&1&0&0\\
+0&0&-3/4&1&0\\
+0&0&0&-4/5&1
+\end{pmatrix},
+$$
+
+and
+
+$$
+U_5=
+\begin{pmatrix}
+2&-1&0&0&0\\
+0&3/2&-1&0&0\\
+0&0&4/3&-1&0\\
+0&0&0&5/4&-1\\
+0&0&0&0&6/5
+\end{pmatrix}.
+$$
+
+The diagonal of $U_5$ is
+
+$$
+2,\frac32,\frac43,\frac54,\frac65.
+$$
+
+This makes the pattern clear:
 
 $$
 d_i=\frac{i+1}{i}.
 $$
 
-Indeed, if $d_i=(i+1)/i$, then
+The subdiagonal entries of $L$ are also visible:
 
 $$
-d_{i+1}=2-\frac{i}{i+1}
+-\frac12,-\frac23,-\frac34,-\frac45,\ldots
+$$
+
+so the expected general form is
+
+$$
+L_{i+1,i}=-\frac{i}{i+1}.
+$$
+
+#### General case: any $n$
+
+Let the diagonal entries of $U$ be $d_i$. Since $A_n$ is tridiagonal, the LU factors keep the same banded structure:
+
+$$
+U=
+\begin{pmatrix}
+d_1&-1&0&\cdots&0\\
+0&d_2&-1&\cdots&0\\
+0&0&d_3&\ddots&0\\
+\vdots&\vdots&\ddots&\ddots&-1\\
+0&0&0&0&d_n
+\end{pmatrix},
+$$
+
+and
+
+$$
+L=
+\begin{pmatrix}
+1&0&0&\cdots&0\\
+\ell_{21}&1&0&\cdots&0\\
+0&\ell_{32}&1&\ddots&0\\
+\vdots&\vdots&\ddots&\ddots&0\\
+0&0&0&\ell_{n,n-1}&1
+\end{pmatrix}.
+$$
+
+At step $i$, the multiplier is
+
+$$
+\ell_{i+1,i}=\frac{-1}{d_i}.
+$$
+
+The next pivot is obtained by subtracting the effect of the previous elimination:
+
+$$
+d_{i+1}=2-\ell_{i+1,i}(-1).
+$$
+
+Since
+
+$$
+\ell_{i+1,i}=-\frac{1}{d_i},
+$$
+
+we get the recurrence
+
+$$
+d_{i+1}=2-\frac{1}{d_i}.
+$$
+
+From the small cases,
+
+$$
+d_1=2=\frac21,\qquad
+d_2=\frac32,\qquad
+d_3=\frac43,\qquad
+d_4=\frac54,\qquad
+d_5=\frac65.
+$$
+
+So conjecture
+
+$$
+d_i=\frac{i+1}{i}.
+$$
+
+Check by induction. Assume
+
+$$
+d_i=\frac{i+1}{i}.
+$$
+
+Then
+
+$$
+d_{i+1}
+=2-\frac{1}{d_i}
+=2-\frac{i}{i+1}
 =\frac{2i+2-i}{i+1}
 =\frac{i+2}{i+1}.
 $$
 
-Therefore
+This is exactly the same formula with $i$ replaced by $i+1$. Therefore, for any $n$,
 
 $$
 \boxed{
@@ -250,6 +529,12 @@ $$
 
 ### 1(c) First three Gauss-Jacobi iterations
 
+Following the slides, write $A=D+R$, where $D=2I$ and $R$ contains the off-diagonal entries. The Jacobi iteration is
+
+$$
+x^{(k+1)}=D^{-1}(b-Rx^{(k)}).
+$$
+
 The equation is
 
 $$
@@ -319,16 +604,16 @@ $$
 
 ### 1(d) Convergence of Jacobi for any $n$
 
-For $A_n$, the Jacobi iteration matrix is
+In the slide notation, the Jacobi scheme has iteration matrix
 
 $$
-B_J=I-D^{-1}A_n,
+G_J=-D^{-1}R=I-D^{-1}A_n,
 $$
 
 where $D=2I$. Thus
 
 $$
-B_J=\frac12
+G_J=\frac12
 \begin{pmatrix}
 0&1&0&\cdots&0\\
 1&0&1&\cdots&0\\
@@ -347,7 +632,7 @@ $$
 Therefore
 
 $$
-\rho(B_J)=\max_k|\mu_k|
+\rho(G_J)=\max_k|\mu_k|
 =\cos\left(\frac{\pi}{n+1}\right)<1.
 $$
 
@@ -544,20 +829,26 @@ $$
 
 No centering is required.
 
-### 3(a) First principal component and MSE
+### 3(a) First principal component/loading and MSE
 
-Compute
+Because the question says no centering is required, use the uncentered covariance matrix
 
 $$
-XX^T.
+V=\frac14XX^T.
 $$
 
-The first data vector has norm $2$, so it contributes a strong direction along $e_1$. The largest eigenvalue of $XX^T$ is $4$, with eigenvector
+Multiplying by $1/4$ changes eigenvalues but not eigenvectors. The first data vector has norm $2$, so it contributes the dominant direction along $e_1$. The largest eigenvalue of $XX^T$ is $4$, equivalently the largest eigenvalue of $V$ is $1$, with loading vector
 
 $$
 \boxed{
 w=e_1=(1,0,0,0,0,0)^T.
 }
+$$
+
+This is the first principal component/loading vector in the slide sense. The PC score for sample $x_i$ is
+
+$$
+y_{i1}=\langle x_i,w\rangle.
 $$
 
 The projection of $x_1$ onto $w$ is exactly $x_1$, so it has zero residual. The other three data points are orthogonal to $w$, so their residuals are themselves.
@@ -599,10 +890,18 @@ $$
 v^{(0)}=\left(\frac{1}{\sqrt2},0,0,\frac{1}{\sqrt2}\right)^T.
 $$
 
+Use the power-iteration notation from the slides:
+
+$$
+z^{(k)}=X^TXv^{(k-1)},\qquad
+v^{(k)}=\frac{z^{(k)}}{\|z^{(k)}\|_2},\qquad
+\omega^{(k)}=(v^{(k)})^TX^TXv^{(k)}.
+$$
+
 #### Iteration 1
 
 $$
-w^{(1)}=X^TXv^{(0)}
+z^{(1)}=X^TXv^{(0)}
 =\left(\frac{4}{\sqrt2},0,0,\frac{1}{\sqrt2}\right)^T.
 $$
 
@@ -616,7 +915,7 @@ $$
 Rayleigh quotient:
 
 $$
-\lambda^{(1)}
+\omega^{(1)}
 =\frac{65}{17}
 \approx3.8235.
 $$
@@ -624,6 +923,9 @@ $$
 #### Iteration 2
 
 $$
+z^{(2)}=X^TXv^{(1)}
+=\left(\frac{16}{\sqrt{17}},0,0,\frac{1}{\sqrt{17}}\right)^T,
+\qquad
 v^{(2)}
 =\left(\frac{16}{\sqrt{257}},0,0,\frac{1}{\sqrt{257}}\right)^T.
 $$
@@ -631,7 +933,7 @@ $$
 Rayleigh quotient:
 
 $$
-\lambda^{(2)}
+\omega^{(2)}
 =\frac{1025}{257}
 \approx3.9883.
 $$
@@ -639,6 +941,9 @@ $$
 #### Iteration 3
 
 $$
+z^{(3)}=X^TXv^{(2)}
+=\left(\frac{64}{\sqrt{257}},0,0,\frac{1}{\sqrt{257}}\right)^T,
+\qquad
 v^{(3)}
 =\left(\frac{64}{\sqrt{4097}},0,0,\frac{1}{\sqrt{4097}}\right)^T.
 $$
@@ -646,7 +951,7 @@ $$
 Rayleigh quotient:
 
 $$
-\lambda^{(3)}
+\omega^{(3)}
 =\frac{16385}{4097}
 \approx3.9993.
 $$
@@ -654,7 +959,7 @@ $$
 Thus the largest eigenvalue is approached rapidly:
 
 $$
-\boxed{\lambda_{\max}=4.}
+\boxed{\omega_{\max}=4.}
 $$
 
 ### 3(c) SVD decomposition for $X$
@@ -763,10 +1068,11 @@ $$
 K(x,x')=|\langle x,x'\rangle|^2.
 $$
 
-The Gram matrix is
+The Gram matrix, in the same notation as the kernel PCA slides, is
 
 $$
-G_{ij}=K(x_i,x_j)=|\langle x_i,x_j\rangle|^2.
+K_{ij}=K(x_i,x_j)=\langle K(x_i,\cdot),K(x_j,\cdot)\rangle_{\mathcal H}
+=|\langle x_i,x_j\rangle|^2.
 $$
 
 Since
@@ -785,7 +1091,7 @@ we square entries to get
 
 $$
 \boxed{
-G=
+K=
 \begin{pmatrix}
 16&0&0&0\\
 0&1&1/2&0\\
@@ -795,13 +1101,19 @@ G=
 }
 $$
 
-The largest eigenvalue of $G$ is $16$, with eigenvector
+The largest Gram eigenvalue is
+
+$$
+\rho_1=16,
+$$
+
+with Euclidean-normalized Gram eigenvector
 
 $$
 q_1=(1,0,0,0)^T.
 $$
 
-The RKHS principal component has form
+The slide eigenvalue notation is $Ka_1=4\omega_1a_1$, so $\rho_1=4\omega_1$. The actual RKHS principal component has form
 
 $$
 v=\sum_{i=1}^{4}a_iK(x_i,\cdot).
@@ -810,19 +1122,20 @@ $$
 Normalize by requiring
 
 $$
-\langle v,v\rangle_{\mathcal H}=a^TGa=1.
+\langle v,v\rangle_{\mathcal H}=a^TKa=1.
 $$
 
-Taking
+Since $Kq_1=\rho_1q_1$ and $\|q_1\|_2=1$, take
 
 $$
-a=\left(\frac{1}{4},0,0,0\right)^T
+a=\frac{q_1}{\sqrt{\rho_1}}
+=\left(\frac{1}{4},0,0,0\right)^T.
 $$
 
-gives
+This gives
 
 $$
-a^TGa=\frac{1}{16}\cdot16=1.
+a^TKa=\frac{1}{16}\cdot16=1.
 $$
 
 Therefore
@@ -844,19 +1157,19 @@ $$
 \|K(x_i,\cdot)-\langle v,K(x_i,\cdot)\rangle_{\mathcal H}v\|_{\mathcal H}^2.
 $$
 
-For a normalized first kernel principal component, the captured variance is the largest Gram eigenvalue. Hence
+For a normalized first kernel principal component, the captured average RKHS variance is $\rho_1/4$. Hence, using the slide PCA error identity,
 
 $$
 \text{MSE}
-=\frac{1}{4}(\operatorname{tr}(G)-\lambda_{\max}).
+=\frac{1}{4}(\operatorname{tr}(K)-\rho_1).
 $$
 
 Here
 
 $$
-\operatorname{tr}(G)=16+1+1+1=19,
+\operatorname{tr}(K)=16+1+1+1=19,
 \qquad
-\lambda_{\max}=16.
+\rho_1=16.
 $$
 
 Thus
@@ -1159,4 +1472,3 @@ Advantages:
 4. Deeper networks become easier to optimize than plain CNNs.
 
 If the dimensions do not match, one should use a projection such as a $1\times1$ convolution or suitable padding/channel matching before adding.
-
