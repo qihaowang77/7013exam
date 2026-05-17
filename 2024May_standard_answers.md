@@ -579,7 +579,7 @@ a=\frac{q_1}{\sqrt{\rho_1}},
 a^TKa=1.
 $$
 
-This step is important: $q_1$ is only the Gram eigenvector; the actual first principal component $v\in\mathcal H$ uses the normalized coefficients $a$.
+This step is important: $q_1\in\mathbb R^4$ is only the Gram eigenvector, not the principal component itself. The actual first principal component/loading is $v\in\mathcal H$ and uses the normalized coefficients $a$. The training-sample score vector would be $Ka$, but the component/loading is the RKHS vector $v$.
 
 The MSE after projecting onto this one normalized feature-space component is
 

@@ -1,0 +1,439 @@
+\documentclass[10pt,a4paper,landscape]{article}
+\usepackage[margin=0.45cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1pt}
+\setlength{\columnsep}{0.38cm}
+\setlist[itemize]{leftmargin=*,nosep,topsep=1pt}
+\setlist[enumerate]{leftmargin=*,nosep,topsep=1pt}
+\renewcommand{\baselinestretch}{0.93}
+\newcommand{\topic}[1]{\vspace{2pt}\textbf{\large #1}\par\hrule\vspace{2pt}}
+\newcommand{\subtopic}[1]{\textbf{#1.}}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Hcal}{\mathcal H}
+
+\begin{document}
+\fontsize{8.45}{9.15}\selectfont
+
+\begin{center}
+{\Large \textbf{ARIN7013 Exam Cheat Sheet, Page 1: CNN, Kernels, Linear Systems}}\\[-1mm]
+\textbf{Use this as a hand-copy plan: formula first, then method steps, then final conclusion.}
+\end{center}
+
+\begin{multicols*}{4}
+
+\topic{CNN And Convolution}
+\subtopic{Cross-correlation}
+For image $I$ and filter $K$,
+\[
+(I*K)_{ij}=\sum_{a,b} I_{i+a,j+b}K_{ab}.
+\]
+In CNN slides, ``convolution'' usually means cross-correlation: no filter flip.
+
+\subtopic{Output shape}
+For input $H\times W\times C_{\rm in}$, filter $F_h\times F_w$, padding $P_h,P_w$, stride $S_h,S_w$,
+\[
+H_{\rm out}=\Big\lfloor {H+2P_h-F_h\over S_h}\Big\rfloor+1,\quad
+W_{\rm out}=\Big\lfloor {W+2P_w-F_w\over S_w}\Big\rfloor+1.
+\]
+Output channels $=C_{\rm out}$, the number of filters.
+
+\subtopic{Weights}
+\[
+\#\text{conv weights}=F_hF_wC_{\rm in}C_{\rm out}
+\]
+Ignore bias if question says so; otherwise add $C_{\rm out}$.
+Pooling has no trainable weights. Flatten only reshapes.
+Fully connected: input dimension $\times$ output dimension.
+
+\subtopic{CNN advantages}
+Write: local receptive fields, sparse connectivity, parameter sharing, fewer parameters, grid/image inductive bias, translation-related robustness after convolution/pooling.
+
+\subtopic{Residual CNN}
+Plain block learns $F(X)$. Residual block:
+\[
+Y=X+F(X),\qquad F(X)=K_2*\sigma(K_1*X).
+\]
+Need same shape for addition. If shape/channel differs, use projection, e.g. $1\times1$ conv. Advantage: easier optimization, learns correction, better gradient flow.
+
+\topic{Kernels And RKHS}
+\subtopic{Positive definite kernel}
+$K:X\times X\to\R$ is p.d. if for any $x_i$ and $c_i$,
+\[
+\sum_{i,j}c_ic_jK(x_i,x_j)\ge0.
+\]
+Equivalent Gram matrix $[K(x_i,x_j)]$ is positive semidefinite.
+
+\subtopic{Inner product proof}
+If $K(x,x')=\langle \phi(x),\phi(x')\rangle_{\Hcal}$, then
+\[
+\sum_{i,j}c_ic_jK(x_i,x_j)
+=\Big\|\sum_i c_i\phi(x_i)\Big\|_{\Hcal}^2\ge0.
+\]
+
+\subtopic{Closure rules}
+If $K_1,K_2$ are p.d., then $aK_1+bK_2$ for $a,b\ge0$, $K_1K_2$, pointwise limits, and $\exp(K_1)$ are p.d.
+Polynomial $(1+\langle x,x'\rangle)^m$ is p.d.
+
+\subtopic{Gaussian kernel proof}
+\[
+e^{-\gamma\|x-x'\|^2}
+=e^{-\gamma\|x\|^2}e^{2\gamma x^Tx'}e^{-\gamma\|x'\|^2}.
+\]
+Use
+\[
+e^{2\gamma x^Tx'}=\sum_{m=0}^{\infty}{(2\gamma)^m\over m!}(x^Tx')^m,
+\]
+nonnegative sum of p.d. kernels, then multiply by $g(x)g(x')$.
+
+\subtopic{Aronszajn theorem}
+$K$ is p.d. iff there exists a Hilbert space $\Hcal$ and feature map $\phi$ such that
+\[
+K(x,x')=\langle \phi(x),\phi(x')\rangle_{\Hcal}.
+\]
+Exam sentence: kernels allow inner products in feature space without explicitly constructing features.
+
+\subtopic{RKHS center distance}
+For $\bar\phi={1\over n}\sum_j\phi(x_j)$,
+\[
+\|\phi(x_i)-\bar\phi\|_{\Hcal}^2
+=K_{ii}-{2\over n}\sum_jK_{ij}
+{1\over n^2}\sum_{j,l}K_{jl}.
+\]
+Average distance: average square root. Average squared distance: average this quantity.
+
+\topic{KRR}
+Objective in slides:
+\[
+\hat f=\arg\min_{f\in\Hcal}{1\over n}\sum_i |f(x_i)-y_i|^2+\beta\|f\|_{\Hcal}^2.
+\]
+Representer theorem:
+\[
+\hat f(x)=\sum_i \varsigma_iK(x_i,x).
+\]
+Let Gram $K_{ij}=K(x_i,x_j)$, $y=(y_i)$. Then fitted values $K\varsigma$ and $\|\hat f\|_{\Hcal}^2=\varsigma^TK\varsigma$.
+\[
+\varsigma=(K+\beta n I)^{-1}y
+\]
+up to null-space ambiguity; this choice is the standard answer. Final predictor must be written as the kernel expansion, not just the coefficient vector.
+
+\topic{Linear Systems}
+\subtopic{Gaussian elimination / LU}
+Direct method; cost about $O(n^3)$, solve triangular systems in $O(n^2)$.
+LU solve template:
+\[
+A=LU,\quad Ly=b,\quad Ux=y.
+\]
+Never write $x=A^{-1}b$ as a computational method unless asked conceptually.
+
+\subtopic{Doolittle LU}
+$A=LU$, $L_{kk}=1$.
+\[
+u_{kj}=a_{kj}-\sum_{s=1}^{k-1}\ell_{ks}u_{sj},\quad j=k,\ldots,n,
+\]
+\[
+\ell_{ik}={a_{ik}-\sum_{s=1}^{k-1}\ell_{is}u_{sk}\over u_{kk}},\quad i=k+1,\ldots,n.
+\]
+Need nonzero pivot $u_{kk}$. Pivoting swaps rows when pivot is zero/small; partial pivoting uses largest available pivot in column.
+
+\subtopic{2025 tridiagonal LU pattern}
+For $A_n$ with diagonal $2$ and off-diagonal $-1$:
+\[
+U_{ii}={i+1\over i},\quad U_{i,i+1}=-1,\quad
+L_{ii}=1,\quad L_{i+1,i}=-{i\over i+1}.
+\]
+Derive by small cases $n=3,4,5$:
+$d_1=2$, $\ell_{i+1,i}=-1/d_i$, $d_{i+1}=2-1/d_i$.
+
+\subtopic{Condition number}
+\[
+\kappa(A)=\|A\|\,\|A^{-1}\|.
+\]
+Large $\kappa(A)$ means small perturbations in $b$ or $A$ can cause large solution error. Ill-conditioned $\approx$ nearly singular.
+
+\topic{Jacobi / Gauss-Seidel / SVD}
+\subtopic{Jacobi}
+Write $A=D+R$:
+\[
+x^{(k+1)}=D^{-1}(b-Rx^{(k)}),\quad
+x_i^{(k+1)}={1\over a_{ii}}\Big(b_i-\sum_{j\ne i}a_{ij}x_j^{(k)}\Big).
+\]
+All RHS values are old values. Easy to parallelize.
+Iteration matrix:
+\[
+G_J=-D^{-1}R=I-D^{-1}A,\quad e^{(k+1)}=G_Je^{(k)}.
+\]
+Converges for all $x^{(0)}$ and $b$ iff $\rho(G_J)<1$. Sufficient: strict diagonal dominance.
+
+\subtopic{Gauss-Seidel}
+Uses newest values immediately:
+\[
+x_i^{(k+1)}={1\over a_{ii}}\Big(b_i-\sum_{j<i}a_{ij}x_j^{(k+1)}
+-\sum_{j>i}a_{ij}x_j^{(k)}\Big).
+\]
+Usually faster if convergent, less parallel.
+
+\subtopic{Matrix multiplication}
+$(n\times n)(n\times n)$: $O(n^3)$. $(m\times n)(n\times r)$: $O(mnr)$.
+
+\subtopic{SVD}
+\[
+A=U\Sigma V^T,\quad A^TA v_i=\sigma_i^2 v_i,\quad u_i={Av_i\over \sigma_i}.
+\]
+Rank-$k$ approximation:
+\[
+A_k=\sum_{i=1}^k\sigma_i u_iv_i^T.
+\]
+Best in Frobenius/spectral norm:
+\[
+\|A-A_k\|_F^2=\sum_{i>k}\sigma_i^2,\qquad
+\|A-A_k\|_2=\sigma_{k+1}.
+\]
+
+\end{multicols*}
+\newpage
+
+\begin{center}
+{\Large \textbf{ARIN7013 Exam Cheat Sheet, Page 2: Eigen, PCA, ODE, ResNet, Neural ODE}}\\[-1mm]
+\textbf{Most marks come from executing the algorithm with the lecture notation.}
+\end{center}
+
+\begin{multicols*}{4}
+
+\topic{Eigenvalue Algorithms}
+\subtopic{Rayleigh quotient}
+For symmetric $A$,
+\[
+R_A(v)={v^TAv\over v^Tv},\quad \text{if }\|v\|=1,\ R_A(v)=v^TAv.
+\]
+Eigenvectors are stationary points. Largest eigenvalue maximizes $R_A(v)$ over unit vectors.
+
+\subtopic{Power iteration}
+For dominant eigenvalue $|\lambda_1|>|\lambda_2|$ and $x_0=a_1u_1+\cdots$, $a_1\ne0$:
+\[
+z^{(k)}=Av^{(k-1)},\quad v^{(k)}={z^{(k)}\over \|z^{(k)}\|},\quad
+\omega^{(k)}=(v^{(k)})^TAv^{(k)}.
+\]
+Proof template:
+\[
+A^kx_0=a_1\lambda_1^k\left(u_1+\sum_{i\ge2}{a_i\over a_1}\left({\lambda_i\over\lambda_1}\right)^ku_i\right).
+\]
+Convergence factor roughly $|\lambda_2/\lambda_1|$.
+
+\subtopic{Inverse iteration}
+Choose shift $\nu$ near desired eigenvalue:
+\[
+(A-\nu I)z^{(k)}=v^{(k-1)},\quad
+v^{(k)}={z^{(k)}\over\|z^{(k)}\|}.
+\]
+Targets eigenvalue closest to $\nu$ because eigenvalues of $(A-\nu I)^{-1}$ are $1/(\lambda_i-\nu)$.
+
+\subtopic{Rayleigh quotient iteration}
+\[
+\omega^{(k-1)}=(v^{(k-1)})^TAv^{(k-1)},
+\]
+\[
+(A-\omega^{(k-1)}I)z^{(k)}=v^{(k-1)},\quad
+v^{(k)}={z^{(k)}\over\|z^{(k)}\|}.
+\]
+For symmetric $A$, sufficiently close to simple eigenpair: cubic convergence.
+
+\topic{Ordinary PCA}
+\subtopic{Core notation}
+Data $x_i\in\R^d$. Center unless question says not to:
+\[
+\tilde x_i=x_i-m,\quad m={1\over n}\sum_i x_i.
+\]
+Covariance:
+\[
+V={1\over n}\sum_i \tilde x_i\tilde x_i^T={1\over n}X^TX
+\]
+if rows are samples. If columns are samples, use $V={1\over n}XX^T$.
+
+\subtopic{Loading vs score}
+Principal component asked in exams usually means loading vector:
+\[
+Vh_j=\omega_jh_j,\quad \|h_j\|=1.
+\]
+PC score for datum $x$:
+\[
+y_j=\langle x,h_j\rangle \quad \text{or}\quad y_j=\langle \tilde x,h_j\rangle.
+\]
+Do not answer with score when asked for loading/component.
+
+\subtopic{Projection and MSE}
+Projection onto first $s$ PCs:
+\[
+P_s(x_i)=\sum_{j=1}^s\langle x_i,h_j\rangle h_j.
+\]
+Average reconstruction MSE:
+\[
+{1\over n}\sum_i\left\|x_i-P_s(x_i)\right\|^2
+=\sum_{j>s}\omega_j.
+\]
+Information preserved:
+\[
+{\sum_{j=1}^s\omega_j\over \sum_{j=1}^d\omega_j}\times100\%.
+\]
+
+\subtopic{If $d$ is large}
+Use $XX^T/n$ or $X^TX/n$ trick. Nonzero eigenvalues match up to dimension convention. For SVD $X=U\Sigma V^T$, PCA directions are singular vectors; variances are $\sigma_i^2/n$.
+
+\topic{Kernel PCA}
+\subtopic{Setup}
+Feature map $\Psi:X\to\Hcal$, kernel
+\[
+K(x,x')=\langle \Psi(x),\Psi(x')\rangle_{\Hcal},\quad
+K_{ij}=K(x_i,x_j).
+\]
+Assume centered in feature space unless question says no centering. If no centering, use raw Gram matrix.
+
+\subtopic{Eigenproblem}
+Slide covariance:
+\[
+V={1\over n}\sum_i \Psi(x_i)\Psi(x_i)^T,\quad
+v_j=\sum_i a_{ji}\Psi(x_i).
+\]
+Here $v_j\in\Hcal$ is the loading/eigenfunction. It is not an $n$-vector.
+Then
+\[
+Ka_j=n\omega_j a_j,\qquad a_j^TKa_j=1.
+\]
+Exam calculation route:
+\[
+Kq_j=\rho_jq_j,\quad \|q_j\|=1,\quad
+a_j={q_j\over\sqrt{\rho_j}},\quad \rho_j=n\omega_j.
+\]
+Then actual RKHS PC:
+\[
+v_j=\sum_i a_{ji}\Psi(x_i).
+\]
+$q_j,a_j\in\R^n$ are coefficient vectors only.
+
+\subtopic{Projection and MSE}
+For new $x$:
+\[
+y_j(x)=\langle \Psi(x),v_j\rangle_{\Hcal}
+=\sum_i a_{ji}K(x_i,x).
+\]
+Training score vector $=Ka_j$, not the loading.
+Using first $s$ kernel PCs:
+\[
+\text{MSE}={1\over n}\left(\operatorname{tr}(K)-\sum_{j=1}^s\rho_j\right)
+=\sum_{j>s}\omega_j.
+\]
+Common trap: answer must be $v_j\in\Hcal$, represented by $a_j$, not score vector $Ka_j$.
+
+\topic{ODE Solvers}
+\subtopic{IVP}
+\[
+x'(t)=f(t,x),\quad x(t_0)=x_0,\quad t_i=t_0+ih.
+\]
+
+\subtopic{Theta method}
+\[
+x_{i+1}=x_i+h[(1-\theta)f(t_i,x_i)+\theta f(t_{i+1},x_{i+1})].
+\]
+$\theta=0$: Forward Euler, explicit.
+\[
+x_{i+1}=x_i+hf(t_i,x_i).
+\]
+$\theta=1$: Backward Euler, implicit.
+\[
+x_{i+1}=x_i+hf(t_{i+1},x_{i+1}).
+\]
+$\theta=1/2$: trapezoidal, generally implicit,
+\[
+x_{i+1}=x_i+{h\over2}[f(t_i,x_i)+f(t_{i+1},x_{i+1})].
+\]
+
+\subtopic{2024 explicit improved Euler scheme}
+\[
+x_i=x_{i-1}+{h\over2}\{f(t_{i-1},x_{i-1})
+ +f(t_i,x_{i-1}+hf(t_{i-1},x_{i-1}))\}.
+\]
+It is explicit: RHS uses known $x_{i-1}$ only.
+
+\subtopic{Error estimate template}
+Define exact/numerical error
+\[
+e_i=x(t_i)-x_i.
+\]
+Local truncation/consistency error, example theta $1/2$:
+\[
+T_i={x(t_{i+1})-x(t_i)\over h}
+-{1\over2}[f(t_i,x(t_i))+f(t_{i+1},x(t_{i+1}))].
+\]
+Taylor with bounded derivatives gives $|T_i|\le Ch^2$ for trapezoidal/improved Euler, and $|T_i|\le Ch$ for Forward Euler.
+
+Subtract numerical scheme from exact consistency relation. Use Lipschitz:
+\[
+|f(t,x)-f(t,y)|\le L|x-y|.
+\]
+Then get recurrence like
+\[
+|e_{i+1}|\le (1+Ch)|e_i|+Ch^{p+1}.
+\]
+Discrete Gronwall:
+\[
+\max_i |e_i|\le C h^p.
+\]
+Forward Euler global order $1$; trapezoidal/improved Euler global order $2$.
+
+\topic{ResNet And Neural ODE}
+\subtopic{ResNet as Euler}
+Forward Euler for hidden state:
+\[
+u_{l+1}=u_l+h f(u_l,\theta_l).
+\]
+ResNet block:
+\[
+u_{l+1}=u_l+F(u_l,\theta_l).
+\]
+Interpret depth as time steps; residual connection improves gradient flow and stability.
+
+\subtopic{Neural ODE}
+\[
+{dx(t)\over dt}=f(x(t),t,\theta),\quad
+x(t_1)=\operatorname{ODESolve}(f,x(t_0),t_0,t_1).
+\]
+Continuous-depth model; solver chooses steps adaptively.
+
+\subtopic{Adjoint gradient}
+Loss $L=L(x(t_1))$. Define adjoint
+\[
+a(t)={\partial L\over \partial x(t)}.
+\]
+Terminal condition:
+\[
+a(t_1)={\partial L\over \partial x(t_1)}.
+\]
+Backward adjoint ODE:
+\[
+{da(t)\over dt}=-a(t)^T{\partial f(x(t),t,\theta)\over \partial x}.
+\]
+Parameter gradient:
+\[
+{\partial L\over\partial\theta}
+=\int_{t_0}^{t_1}a(t)^T{\partial f(x(t),t,\theta)\over\partial\theta}\,dt.
+\]
+Memory comparison: ResNet/backprop stores many layer activations; Neural ODE adjoint can recompute trajectory backward, lower memory but possible numerical instability/recomputation cost.
+
+\topic{Last-Minute Traps}
+\begin{itemize}
+\item PCA component/loading $\ne$ PC score. Loading is eigenvector.
+\item Kernel PCA: answer component is $v\in\Hcal$; normalize $a^TKa=1$.
+\item KRR: write final function $\hat f(x)=\sum_i\varsigma_iK(x_i,x)$.
+\item Jacobi uses all old values; Gauss-Seidel uses new values immediately.
+\item CNN: shape formula before weight count; filter weights are shared.
+\item Do not center data if exam explicitly says no centering.
+\item ODE error proof: truncation error $\to$ recurrence $\to$ Gronwall/order.
+\item Residual addition requires matching dimensions.
+\end{itemize}
+
+\end{multicols*}
+\end{document}

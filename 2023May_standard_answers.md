@@ -718,7 +718,7 @@ q_1\approx
 \end{pmatrix}.
 $$
 
-This $q_1$ is the Euclidean-normalized Gram eigenvector. The slide notation for the actual RKHS principal component is
+This $q_1\in\mathbb R^3$ is the Euclidean-normalized Gram eigenvector, not the principal component itself. The slide notation for the actual RKHS principal component/loading is
 
 $$
 v_1=\sum_{i=1}^{3}a_i\Psi(x_i),
@@ -737,6 +737,8 @@ a=\frac{q_1}{\sqrt{\rho_1}}.
 $$
 
 This also matches the lecture formula $Ka_1=n\omega_1a_1$ with $\rho_1=n\omega_1$.
+
+So the loading/eigenfunction is $v_1\in\mathcal H$. The vector $Ka$ would be the PC scores on the training samples, not the Hilbert-space loading.
 
 Since $\sqrt{\rho_1}\approx52.8843$,
 

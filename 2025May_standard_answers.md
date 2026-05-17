@@ -8,7 +8,7 @@ Notation is aligned with the lecture slides:
 
 - Jacobi uses the splitting $A=D+R$ and $x^{(k+1)}=D^{-1}(b-Rx^{(k)})$.
 - For ordinary PCA, the requested principal component $w$ is the loading vector. The PC score for a datum $x_i$ is $\langle x_i,w\rangle$.
-- For kernel PCA, the Gram matrix is $K_{ij}=K(x_i,x_j)=\langle K(x_i,\cdot),K(x_j,\cdot)\rangle_{\mathcal H}$. If $Kq_j=\rho_jq_j$ and $\|q_j\|_2=1$, then the normalized RKHS principal component is $v_j=\sum_i a_{ji}K(x_i,\cdot)$ with $a_j=q_j/\sqrt{\rho_j}$, matching the slide condition $Ka_j=n\omega_ja_j$ and $a_j^TKa_j=1$.
+- For kernel PCA, let $\Psi$ be the kernel map into $\mathcal H$, so $K_{ij}=K(x_i,x_j)=\langle \Psi(x_i),\Psi(x_j)\rangle_{\mathcal H}$. If $Kq_j=\rho_jq_j$ and $\|q_j\|_2=1$, then the normalized RKHS principal component/loading is $v_j=\sum_i a_{ji}\Psi(x_i)$ with $a_j=q_j/\sqrt{\rho_j}$, matching the slide condition $Ka_j=n\omega_ja_j$ and $a_j^TKa_j=1$. Its evaluation is $v_j(x)=\sum_i a_{ji}K(x_i,x)$.
 
 ## Question 1
 
@@ -1068,10 +1068,16 @@ $$
 K(x,x')=|\langle x,x'\rangle|^2.
 $$
 
+Let $\Psi$ be the kernel map into the RKHS $\mathcal H$, so
+
+$$
+K(x,x')=\langle \Psi(x),\Psi(x')\rangle_{\mathcal H}.
+$$
+
 The Gram matrix, in the same notation as the kernel PCA slides, is
 
 $$
-K_{ij}=K(x_i,x_j)=\langle K(x_i,\cdot),K(x_j,\cdot)\rangle_{\mathcal H}
+K_{ij}=K(x_i,x_j)=\langle \Psi(x_i),\Psi(x_j)\rangle_{\mathcal H}
 =|\langle x_i,x_j\rangle|^2.
 $$
 
@@ -1113,10 +1119,12 @@ $$
 q_1=(1,0,0,0)^T.
 $$
 
-The slide eigenvalue notation is $Ka_1=4\omega_1a_1$, so $\rho_1=4\omega_1$. The actual RKHS principal component has form
+Important distinction: $q_1\in\mathbb R^4$ is not the principal component requested by the question. It is the Gram-matrix eigenvector used to find the coefficients. The requested object is the feature-space loading/eigenfunction $v\in\mathcal H$.
+
+The slide eigenvalue notation is $Ka_1=4\omega_1a_1$, so $\rho_1=4\omega_1$. The actual RKHS principal component/loading has form
 
 $$
-v=\sum_{i=1}^{4}a_iK(x_i,\cdot).
+v=\sum_{i=1}^{4}a_i\Psi(x_i).
 $$
 
 Normalize by requiring
@@ -1142,11 +1150,25 @@ Therefore
 
 $$
 \boxed{
-v(\cdot)=\frac{1}{4}K(x_1,\cdot)
+v=\frac{1}{4}\Psi(x_1)
 }
 $$
 
-is the first kernel principal component.
+is the first kernel principal component/loading in $\mathcal H$.
+
+Equivalently, when this RKHS vector is evaluated as a function,
+
+$$
+v(x)=\frac14 K(x_1,x).
+$$
+
+The corresponding PC score vector on the training samples would be
+
+$$
+Ka=K\left(\frac14,0,0,0\right)^T=(4,0,0,0)^T,
+$$
+
+but that score vector is not the answer to part 3(d)(i).
 
 ### 3(d)(ii) Kernel PCA MSE
 
@@ -1154,8 +1176,10 @@ The MSE is
 
 $$
 \frac{1}{4}\sum_{i=1}^{4}
-\|K(x_i,\cdot)-\langle v,K(x_i,\cdot)\rangle_{\mathcal H}v\|_{\mathcal H}^2.
+\|\Psi(x_i)-\langle v,\Psi(x_i)\rangle_{\mathcal H}v\|_{\mathcal H}^2.
 $$
+
+This is the same quantity as the exam's notation using $K(x_i,\cdot)$ under the canonical RKHS identification, but the slide notation is $\Psi(x_i)$.
 
 For a normalized first kernel principal component, the captured average RKHS variance is $\rho_1/4$. Hence, using the slide PCA error identity,
 
